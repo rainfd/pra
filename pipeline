@@ -1,0 +1,23 @@
+node('master') {
+    # Job1成功后启动
+    properties([
+        pipelineTriggers([
+            upstream(
+                threshold: hudson.model.Result.SUCCESS,
+                # 多分支 Job1/master
+                upsteamProjects: 'Job1'
+            ),
+
+            cron('0 9 * * 1-5'),
+
+            pollSCM('*/20 * * * *')
+
+            githubPush()
+        ])
+    ])
+
+
+    stage('Source') {
+        git 'xx'
+    }
+}
