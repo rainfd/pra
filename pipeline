@@ -1,23 +1,55 @@
 node('master') {
-    # Job1成功后启动
-    properties([
-        pipelineTriggers([
-            upstream(
-                threshold: hudson.model.Result.SUCCESS,
-                # 多分支 Job1/master
-                upsteamProjects: 'Job1'
-            ),
+    //Job1成功后启动
+    //properties([
+    //    pipelineTriggers([
+    //        upstream(
+    //            threshold: hudson.model.Result.SUCCESS,
+    //            # 多分支 Job1/master
+    //            upsteamProjects: 'Job1'
+    //        ),
 
-            cron('0 9 * * 1-5'),
+    //        cron('0 9 * * 1-5'),
 
-            pollSCM('*/20 * * * *')
+    //        pollSCM('*/20 * * * *')
 
-            githubPush()
-        ])
-    ])
+    //        githubPush()
+    //    ])
+    //])
 
 
-    stage('Source') {
-        git 'xx'
+    //stage('Source') {
+        //git 'xx'
+    //}
+
+    // Parallel
+    stage('Parallel Demo') {
+        def stepsToRun = [:]
+        for (int i = 1; i < 5; i++) {
+            stepsToRun["Step${i}"] = { node {
+                echo "start" sleep 5
+                echo "end"
+            }}
+        }
+        parallel stepsToRun
+        // 一个分支错误后整体退出
+        failFast: true
     }
+
+    stage('Test') {
+        parallel (
+            //master: { node('master'){
+            master: { node {
+                echo master
+            }},
+            worker2: { node {
+                echo worker2
+            }}
+        )
+    }
+
+    stage("Controller") {
+        // if () {}
+    }
+
+    // https://oapi.dingtalk.com/robot/send?access_token=4afb3884c25188fe6939210b9b870bed4c0ad779f75fcf9e066522ac52712a27
 }
